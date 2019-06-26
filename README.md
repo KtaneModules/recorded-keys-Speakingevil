@@ -1,1 +1,1 @@
-# recorded-keys
+#[ModKit Wiki](../../wiki)
