@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -164,6 +164,10 @@ public class RecordedKeysScript : MonoBehaviour
             {
                 GetComponent<KMAudio>().PlaySoundAtTransform(soundList[1][k], transform);
             }
+        }
+        else if(moduleSolved == true)
+        {
+            GetComponent<KMAudio>().PlaySoundAtTransform(soundList[0][k], transform);
         }
     }
 
@@ -378,7 +382,7 @@ public class RecordedKeysScript : MonoBehaviour
  
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} press 0123456 [position in reading order; 0 is the black button up top] | !{0} colorblind";
+    private readonly string TwitchHelpMessage = @"!{0} press/play 0123456 [position in reading order; 0 is the black button up top] | !{0} k [momentarily darkens white keys] | !{0} colorblind";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
@@ -386,6 +390,19 @@ public class RecordedKeysScript : MonoBehaviour
         if (Regex.IsMatch(command, @"^\s*colorblind\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             colorblind = true;
+            for (int i = 0; i < 6; i++)
+                setKey(i);
+            yield return null;
+            yield break;
+        }
+
+        if (Regex.IsMatch(command, @"^\s*k\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                keyID[i].material = keyColours[8];
+            }
+            yield return new WaitForSeconds(2f);
             for (int i = 0; i < 6; i++)
                 setKey(i);
             yield return null;
@@ -402,6 +419,19 @@ public class RecordedKeysScript : MonoBehaviour
             while (!pressable)
                 yield return "trycancel";
             yield return new[] { keyToPress };
+        }
+
+        var n = Regex.Match(command, @"^\s*(?:play\s*)?([123456 ,;]+)\s*$");
+        if (!n.Success)
+            yield break;
+
+        foreach (var keyToPress in n.Groups[1].Value.Where(ch => ch >= '1' && ch <= '6').Select(ch => keys[ch]))
+        {
+            yield return null;
+            while (!pressable || inputMode)
+                yield return "trycancel";
+            yield return new[] { keyToPress };
+            yield return new WaitForSeconds(0.4f);
         }
     }
 }
