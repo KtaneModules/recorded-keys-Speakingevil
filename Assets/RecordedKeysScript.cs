@@ -382,7 +382,7 @@ public class RecordedKeysScript : MonoBehaviour
  
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} press 0123456 [position in reading order; 0 is the black button up top] | !{0} cycle [plays keys in reading order] | !{0} k [momentarily darkens white keys] | !{0} colorblind";
+    private readonly string TwitchHelpMessage = @"!{0} press 0123456 [position in reading order; 0 is the black button up top] | !{0} cycle/cycleslow [plays keys in reading order with half/full second pauses in between] | !{0} k [momentarily darkens white keys] | !{0} colorblind";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
@@ -429,7 +429,24 @@ public class RecordedKeysScript : MonoBehaviour
                 for (int i = 0; i < 6; i++)
                 {
                     keys[i].OnInteract();
-                    yield return new WaitForSeconds(0.2f);
+                    yield return new WaitForSeconds(0.5f);
+                }
+            }
+            else
+            {
+                yield return "trycancel";
+            }
+        }
+
+        if (Regex.IsMatch(command, @"^\s*cycleslow\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            if (inputMode == false && pressable == true)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    keys[i].OnInteract();
+                    yield return new WaitForSeconds(1);
                 }
             }
             else
