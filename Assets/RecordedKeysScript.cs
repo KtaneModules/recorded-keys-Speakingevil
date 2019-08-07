@@ -382,7 +382,7 @@ public class RecordedKeysScript : MonoBehaviour
  
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} press 0123456 [position in reading order; 0 is the black button up top] | !{0} cycle/cycleslow [plays keys in reading order with half/full second pauses in between] | !{0} k [momentarily darkens white keys] | !{0} colorblind";
+    private readonly string TwitchHelpMessage = @"!{0} press 0123456 [position in reading order; 0 is the black button up top] | !{0} k [momentarily darkens white keys] | !{0} w [momentarily brightens black keys] | !{0} colorblind";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
@@ -400,7 +400,20 @@ public class RecordedKeysScript : MonoBehaviour
         {
             for (int i = 0; i < 6; i++)
             {
-                keyID[i].material = keyColours[8];
+                keyID[i].material = keyColours[7];
+            }
+            yield return new WaitForSeconds(2f);
+            for (int i = 0; i < 6; i++)
+                setKey(i);
+            yield return null;
+            yield break;
+        }
+
+        if (Regex.IsMatch(command, @"^\s*w\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                keyID[i].material = keyColours[6];
             }
             yield return new WaitForSeconds(2f);
             for (int i = 0; i < 6; i++)
@@ -418,41 +431,9 @@ public class RecordedKeysScript : MonoBehaviour
             yield return null;
             while (!pressable)
                 yield return "trycancel";
+            if (inputMode == false)
+                yield return new WaitForSeconds(0.5f);
             yield return new[] { keyToPress };
-        }
-
-        if (Regex.IsMatch(command, @"^\s*cycle\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-        {
-            yield return null;
-            if (inputMode == false && pressable == true)
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    keys[i].OnInteract();
-                    yield return new WaitForSeconds(0.5f);
-                }
-            }
-            else
-            {
-                yield return "trycancel";
-            }
-        }
-
-        if (Regex.IsMatch(command, @"^\s*cycleslow\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-        {
-            yield return null;
-            if (inputMode == false && pressable == true)
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    keys[i].OnInteract();
-                    yield return new WaitForSeconds(1);
-                }
-            }
-            else
-            {
-                yield return "trycancel";
-            }
-        }
+        } 
     }
 }
